@@ -26,6 +26,6 @@ public interface API {
     @POST("auth")
     Call<Profile> getToken(@Query("email") String email,@Query("password") String password);
 
-    @GET("articles")
-    Call<List<Article>> getArticles(@Path("user_id") String user, @Query("token") String token);
+    @GET("articles/{user_id}")
+    Call<List<Article>> getArticles(@Path("user_id") String user_id, @Query("token") String token);
 }

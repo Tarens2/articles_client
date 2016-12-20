@@ -5,11 +5,8 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.CursorLoader;
@@ -35,19 +32,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.taras.forumclient.Api.API;
-import com.example.taras.forumclient.Api.ApiGetMe;
-import com.example.taras.forumclient.Api.ApiGetToken;
 import com.example.taras.forumclient.Model.Profile;
-import com.example.taras.forumclient.Model.User;
 
-import org.json.JSONObject;
-import org.w3c.dom.Text;
-
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,10 +41,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.*;
 import retrofit2.converter.gson.GsonConverterFactory;
-
-import static android.Manifest.permission.READ_CONTACTS;
 
 
 public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
@@ -70,7 +53,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     };*/
 
 
-    public final String BASE_URL = "http://10.0.3.2:8000/api/";
+    static public final String BASE_URL = "http://10.0.3.2:8000/api/";
     private UserLoginTask mAuthTask = null;
 
     private AutoCompleteTextView mEmailView;
@@ -84,7 +67,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private Error error;
 
     private AppCompatActivity myActivity = this;
-
+    private String app_token;
 
     Profile profile;
     public enum Error {
@@ -164,6 +147,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             .addConverterFactory(GsonConverterFactory.create())
             .build();
         service = restAdapter.create(API.class);
+        showProgress(true);
+        getToken("t@mail.ru", "secret");
     }
 /*
     private void populateAutoComplete() {
@@ -260,12 +245,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
+
         return email.contains("@");
     }
 
     private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
+
         return password.length() > 4;
     }
 
@@ -376,18 +361,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected Boolean doInBackground(Void... params) {
 
 
-            ApiGetToken apitoken = new ApiGetToken(mEmail,mPassword);
-            apitoken.connect();
-
-            token = apitoken.getToken();
-            //ApiGetMe apiuser = new ApiGetMe(apitoken.getToken());
-            //apiuser.connect();
-
-
-            //String user = apiuser.getName();
-
-            //Log.v(apitoken.getToken(),"tokenapi");
-
             return true;
         }
 
@@ -422,9 +395,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
                 if(response.isSuccessful()){
                     showProgress(false);
-
-                    Intent intent = new Intent(LoginActivity.this, Profile.class);
-                    intent.putExtra("token", profile.getToken());
+                    profile = response.body();
+                    Intent intent = new Intent(LoginActivity.this, ProfileActivity.class);
+                    intent.putExtra("token", app_token);
                     intent.putExtra("user_id", profile.getUser().getId());
                     intent.putExtra("name", profile.getUser().getName());
                     intent.putExtra("email", profile.getUser().getEmail());
@@ -450,11 +423,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 if(response.isSuccessful()){
                     error = Error.NO_ERROR;
                     profile = response.body();
-                    profile.setToken(response.body().getToken());
-                    getMe(response.body().getToken());
+                    app_token = response.body().getToken();
+
+                    getMe(app_token);
                 }
                 else{
-                    ShowPopUpError(error.getCode());
+                    ShowPopUpError(response.code());
                 }
             }
 

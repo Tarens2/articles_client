@@ -13,6 +13,8 @@ public class Profile {
         return user;
     }
 
+
+
     public String getToken() {
         return token;
     }
@@ -20,8 +22,12 @@ public class Profile {
     public void setToken(String token) {
         this.token = token;
     }
+    public void setUser(User user) {
+        this.user = user;
+    }
 
-    Profile(){
-
+    public Profile(String token, User user){
+        this.user = user;
+        this.token = token;
     }
 }

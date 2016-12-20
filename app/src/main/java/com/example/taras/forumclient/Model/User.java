@@ -21,4 +21,10 @@ public class User {
         return email;
     }
 
+
+    public User(String id, String name, String email){
+        this.name = name;
+        this.id = id;
+        this.email = email;
+    }
 }
